@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Annora</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --bg-hue:220;
+  --edge-darkness:0;
+}
+
+body{
+  background:radial-gradient(circle at center,hsl(var(--bg-hue),40%,18%),#000 70%);
+  overflow:hidden;
+  font-family:system-ui,sans-serif;
+  transition:background 2s linear;
+}
+
+/* ===================== STAR SYSTEMS ===================== */
+
+.starfield,
+.star-particles,
+.shooting-stars{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 2s ease;
+}
+
+.starfield.active,
+.star-particles.active,
+.shooting-stars.active{
+  opacity:1;
+}
+
+.starfield{
+  background-image:
+    radial-gradient(1px 1px at 20% 30%,white,transparent),
+    radial-gradient(1px 1px at 70% 40%,white,transparent),
+    radial-gradient(1px 1px at 40% 70%,white,transparent),
+    radial-gradient(1px 1px at 85% 85%,white,transparent);
+  background-size:250px 250px;
+  animation:stars 18s linear infinite;
+  z-index:-1;
+}
+
+@keyframes stars{
+  from{transform:translateY(0)}
+  to{transform:translateY(-250px)}
+}
+
+/* FLOATING PARTICLES */
+.star-particles span{
+  position:absolute;
+  background:white;
+  border-radius:50%;
+  opacity:.3;
+  animation:float linear infinite;
+}
+
+@keyframes float{
+  from{transform:translateY(110vh)}
+  to{transform:translateY(-10vh)}
+}
+
+/* SHOOTING STARS */
+.shooting-stars span{
+  position:absolute;
+  width:120px;
+  height:2px;
+  background:linear-gradient(90deg,white,transparent);
+  opacity:.8;
+  transform:rotate(-45deg);
+  animation:shoot 1.2s ease-out forwards;
+}
+
+@keyframes shoot{
+  from{transform:translate(0,0) rotate(-45deg);opacity:1}
+  to{transform:translate(-600px,600px) rotate(-45deg);opacity:0}
+}
+
+/* ===================== COSMETICS ===================== */
+
+.vignette{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle,transparent 55%,rgba(0,0,0,0.65) 100%);
+  animation:breathe 26s ease-in-out infinite;
+  z-index:4;
+}
+
+@keyframes breathe{
+  0%,100%{opacity:.55}
+  50%{opacity:.7}
+}
+
+.edge-gravity{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(
+    to bottom,
+    rgba(0,0,0,var(--edge-darkness)),
+    transparent 20%,
+    transparent 80%,
+    rgba(0,0,0,var(--edge-darkness))
+  );
+  z-index:5;
+}
+
+/* ===================== SCROLLER ===================== */
+
+.scroller{
+  height:100vh;
+  overflow:hidden; /* user scrolling disabled */
+  scroll-snap-type:y mandatory;
+}
+
+.section{
+  height:100vh;
+  scroll-snap-align:start;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  color:white;
+}
+
+/* ===================== INTRO TEXT ===================== */
+
+.intro-text{
+  font-size:14px;
+  letter-spacing:3px;
+  opacity:0;
+  margin-bottom:18px;
+}
+
+.intro-text.show{animation:fadeIn 6s ease forwards;}
+.intro-text.fade-out{animation:fadeOut 4s ease forwards;}
+#enjoy-text.show{animation:fadeInEnjoy 1.5s ease forwards;}
+
+@keyframes fadeIn{to{opacity:.85}}
+@keyframes fadeOut{to{opacity:0}}
+@keyframes fadeInEnjoy{to{opacity:.9}}
+
+/* ===================== PLAY BUTTON ===================== */
+
+#playBtn{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  border:none;
+  background:white;
+  margin-top:10px;
+  opacity:0;
+  cursor:pointer;
+  pointer-events:none;
+  box-shadow:0 0 40px white,0 0 120px rgba(255,255,255,.6);
+  animation:playFade 6s ease forwards;
+  animation-delay:6s;
+}
+
+#playBtn.ready{pointer-events:auto}
+@keyframes playFade{to{opacity:1}}
+
+#playBtn.active{
+  background:gold;
+  box-shadow:0 0 40px gold,0 0 120px rgba(255,200,0,.7);
+}
+
+.instructions{
+  margin-top:30px;
+  text-align:center;
+  font-size:13px;
+  letter-spacing:2px;
+  opacity:0;
+  transition:1s;
+}
+.instructions.show{opacity:.9}
+
+/* ===================== VIDEO ===================== */
+
+video{
+  max-width:90vw;
+  max-height:90vh;
+  object-fit:contain;
+  cursor:pointer;
+  opacity:.65;
+  transition:.6s;
+  box-shadow:0 0 40px rgba(120,150,255,.35),0 0 120px rgba(120,150,255,.15);
+}
+
+.section.active video{opacity:1;transform:scale(1.01);}
+.section.paused video{filter:saturate(.8);}
+
+/* RIPPLE */
+.ripple{
+  position:fixed;
+  width:20px;height:20px;
+  border-radius:50%;
+  border:2px solid rgba(180,200,255,.4);
+  animation:ripple .5s ease-out forwards;
+  pointer-events:none;
+  z-index:9;
+}
+
+@keyframes ripple{
+  to{transform:scale(18);opacity:0}
+}
+</style>
+</head>
+
+<body>
+
+<div class="starfield"></div>
+<div class="star-particles"></div>
+<div class="shooting-stars"></div>
+<div class="vignette"></div>
+<div class="edge-gravity"></div>
+
+<audio id="bgm" preload="auto"></audio>
+
+<div class="scroller" id="scroller">
+
+<section class="section" id="intro">
+  <div id="fullscreen-text" class="intro-text show">
+    FULLSCREEN FOR BEST EXPERIENCE
+  </div>
+
+  <div id="enjoy-text" class="intro-text">
+    ENJOY YOUR STAY, LOVE &lt;3
+  </div>
+
+  <button id="playBtn"></button>
+
+  <div class="instructions" id="instructions">
+    <div>USE ↓ TO SCROLL</div><br>
+    <div>PRESS SPACE TO PAUSE</div>
+  </div>
+</section>
+
+</div>
+
+<script>
+/* ===== BLOCK MANUAL SCROLL ===== */
+window.addEventListener("wheel",e=>e.preventDefault(),{passive:false});
+window.addEventListener("touchmove",e=>e.preventDefault(),{passive:false});
+
+/* AUDIO */
+const audio=document.getElementById("bgm");
+const tracks=["zmusic1.mp3","zmusic2.mp3","zmusic3.mp3","zmusic4.mp3"];
+let trackIndex=0;
+
+function playTrack(){
+  audio.src=tracks[trackIndex];
+  audio.play().catch(()=>{});
+}
+audio.onended=()=>{
+  trackIndex=(trackIndex+1)%tracks.length;
+  playTrack();
+};
+
+/* STAR SYSTEMS */
+const particleLayer=document.querySelector(".star-particles");
+const shootingLayer=document.querySelector(".shooting-stars");
+
+function createParticles(){
+  for(let i=0;i<140;i++){
+    const s=document.createElement("span");
+    const size=Math.random()*2+1;
+    s.style.width=size+"px";
+    s.style.height=size+"px";
+    s.style.left=Math.random()*100+"vw";
+    s.style.top=Math.random()*100+"vh";
+    s.style.animationDuration=20+Math.random()*40+"s";
+    particleLayer.appendChild(s);
+  }
+}
+
+function spawnShootingStar(){
+  const s=document.createElement("span");
+  s.style.left=Math.random()*120+"vw";
+  s.style.top=Math.random()*50+"vh";
+  shootingLayer.appendChild(s);
+  setTimeout(()=>s.remove(),1200);
+}
+
+/* INTRO LOGIC */
+const playBtn=document.getElementById("playBtn");
+const instructions=document.getElementById("instructions");
+const fullscreenText=document.getElementById("fullscreen-text");
+const enjoyText=document.getElementById("enjoy-text");
+
+let started=false;
+
+playBtn.addEventListener("animationend",()=>{
+  playBtn.classList.add("ready");
+});
+
+playBtn.onclick=()=>{
+  if(!playBtn.classList.contains("ready")) return;
+
+  started=true;
+
+  playBtn.classList.add("active");
+  instructions.classList.add("show");
+  fullscreenText.classList.add("fade-out");
+
+  setTimeout(()=>enjoyText.classList.add("show"),1200);
+
+  document.querySelectorAll(".starfield,.star-particles,.shooting-stars")
+    .forEach(e=>e.classList.add("active"));
+
+  if(audio.paused) playTrack();
+  createParticles();
+  setInterval(spawnShootingStar,600);
+};
+
+/* VIDEOS */
+const videos=[
+"video1.mp4","video2.mp4","video3.mp4","video4.mp4","video5.mp4",
+"video6.mp4","video7.mp4","video8.mp4","video9.mp4","video10.mp4",
+"video11.mp4","video12.mp4","video13.mp4","video14.mp4","video15.mp4",
+"video16.mp4","video17.mp4","video18.mp4","video19.mp4"
+];
+
+const scroller=document.getElementById("scroller");
+
+videos.forEach(src=>{
+  const s=document.createElement("section");
+  s.className="section";
+  s.innerHTML=`<video src="${src}" muted loop playsinline></video>`;
+  scroller.appendChild(s);
+});
+
+const sections=[...document.querySelectorAll(".section")].slice(1);
+const vids=sections.map(s=>s.querySelector("video"));
+let current=0;
+
+/* OBSERVER */
+const obs=new IntersectionObserver(e=>{
+  e.forEach(x=>{
+    const v=x.target.querySelector("video");
+    if(!v) return;
+    if(x.isIntersecting){
+      current=sections.indexOf(x.target);
+      document.documentElement.style.setProperty("--bg-hue",(current*37)%360);
+      x.target.classList.add("active");
+      v.play();
+    }else{
+      x.target.classList.remove("active","paused");
+      v.pause();
+    }
+  });
+},{threshold:.7});
+
+sections.forEach(s=>obs.observe(s));
+
+/* CONTROLS */
+function toggle(i,x,y){
+  const v=vids[i],s=sections[i];
+  if(v.paused){
+    v.play();s.classList.remove("paused");
+    const r=document.createElement("div");
+    r.className="ripple";
+    r.style.left=x+"px";r.style.top=y+"px";
+    document.body.appendChild(r);
+    setTimeout(()=>r.remove(),500);
+  }else{
+    v.pause();s.classList.add("paused");
+  }
+}
+
+vids.forEach((v,i)=>v.onclick=e=>toggle(i,e.clientX,e.clientY));
+
+window.onkeydown=e=>{
+  if(!started) return;
+
+  if(e.code==="ArrowDown"){
+    sections[current+1]?.scrollIntoView({behavior:"smooth"});
+  }
+
+  if(e.code==="Space"){
+    e.preventDefault();
+    toggle(current,innerWidth/2,innerHeight/2);
+  }
+};
+</script>
+
+</body>
+</html>
